@@ -36,6 +36,17 @@ class ToolCallAgent(ReActAgent):
     max_steps: int = 30
     max_observe: Optional[Union[int, bool]] = None
 
+    def sanitize_message_history(self, messages):
+        sanitized = []
+        last_role = None
+        for msg in messages:
+            if msg.role == "user" and last_role == "tool":
+                sanitized.append(Message.assistant_message("(acknowledged)"))
+            sanitized.append(msg)
+            last_role = msg.role
+        return sanitized
+
+
     async def think(self) -> bool:
         """Process current state and decide next actions using tools"""
         if self.next_step_prompt:
@@ -43,9 +54,11 @@ class ToolCallAgent(ReActAgent):
             self.messages += [user_msg]
 
         try:
+            # Sanitize message history
+            sanitized_messages = self.sanitize_message_history(self.messages)
             # Get response with tool options
             response = await self.llm.ask_tool(
-                messages=self.messages,
+                messages=sanitized_messages,
                 system_msgs=(
                     [Message.system_message(self.system_prompt)]
                     if self.system_prompt
