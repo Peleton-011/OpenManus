@@ -90,11 +90,12 @@ class MCPAgent(ToolCallAgent):
         Returns:
             A tuple of (added_tools, removed_tools)
         """
-        if not self.mcp_clients.session:
+        session = next(iter(self.mcp_clients.sessions.values()), None)
+        if not session:
             return [], []
 
         # Get current tool schemas directly from the server
-        response = await self.mcp_clients.session.list_tools()
+        response = await session.list_tools()
         current_tools = {tool.name: tool.inputSchema for tool in response.tools}
 
         # Determine added, removed, and changed tools
