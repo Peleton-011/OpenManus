@@ -135,7 +135,7 @@ class MCPAgent(ToolCallAgent):
     async def think(self) -> bool:
         """Process current state and decide next action."""
         # Check MCP session and tools availability
-        if not self.mcp_clients.session or not self.mcp_clients.tool_map:
+        if not self.mcp_clients.sessions or not self.mcp_clients.tool_map:
             logger.info("MCP service is no longer available, ending interaction")
             self.state = AgentState.FINISHED
             return False
@@ -172,7 +172,7 @@ class MCPAgent(ToolCallAgent):
 
     async def cleanup(self) -> None:
         """Clean up MCP connection when done."""
-        if self.mcp_clients.session:
+        if self.mcp_clients.sessions:
             await self.mcp_clients.disconnect()
             logger.info("MCP connection closed")
 
